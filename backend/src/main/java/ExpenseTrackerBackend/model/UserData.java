@@ -40,6 +40,9 @@ public class UserData {
     @Setter
     private int cardTransaction;
 
+    @Getter @Setter
+    private int totalExpense;
+
     @Getter
     @ElementCollection
     @CollectionTable(
@@ -63,6 +66,7 @@ public class UserData {
     private String displayName;
 
     public UserData(){
+        totalExpense = 0;
         expense.put("travelExpense",0);
         expense.put("foodExpense",0);
     }
@@ -82,5 +86,9 @@ public class UserData {
             expense.put(category, 0);
             return expense;
         }else throw new RuntimeException("Expense defined properly");
+    }
+
+    public void setTransactionHistory(List<Transaction> transactionHistory) {
+        this.transactionHistory = transactionHistory;
     }
 }
