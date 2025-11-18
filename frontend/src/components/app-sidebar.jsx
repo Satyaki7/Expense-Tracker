@@ -30,6 +30,7 @@ import {
 import { Link } from "react-router"
 import { Skeleton } from "./ui/skeleton"
 import axios from "axios"
+import { useGlobal } from "@/globalProviders/GlobalContext"
 
 const data = {
   user: {
@@ -59,25 +60,26 @@ const data = {
 export function AppSidebar({
   ...props
 }) {
-
   const [user, setUserdata] = React.useState(null);
   const url = import.meta.env.VITE_BACKEND;
-  
+  const [basicData, setBasicData] = React.useState(null);
+
   React.useEffect(() => {
     const fetchUserData = async () => {
-      const res = await axios.get(`${url}/dashboard`, { 
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      })
-      .then((res) => 
-      {
-        setUserdata(res.data.user);
-        console.log(res.data.user);
-      })
-      .catch((err)=> {
-        console.log("error: ", err)
-      })
+      // const res = await axios.get(`${url}/dashboard`, { 
+      //   headers: {
+      //     Authorization: `Bearer ${localStorage.getItem("token")}`
+      //   }
+      // })
+      // .then((res) => 
+      // {
+      //   setUserdata(res.data.user);
+      //   setBasicData(res);
+      //   console.log(res.data.user);
+      // })
+      // .catch((err)=> {
+      //   console.log("error: ", err)
+      // })
     }
 
     fetchUserData();
@@ -111,7 +113,7 @@ export function AppSidebar({
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={props.user.user} basicData={props.user} />
       </SidebarFooter>
     </Sidebar>
   );

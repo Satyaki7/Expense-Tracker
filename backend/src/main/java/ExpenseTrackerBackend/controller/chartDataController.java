@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -49,6 +46,16 @@ public class chartDataController {
         String userID = getUserId(request);
         return dataService.findUser(userID).getExpense();
     }
+    @GetMapping("/pieChart2")
+    public List<Integer> pieChart2(HttpServletRequest request) {
+        String userID = getUserId(request);
+        List<Integer> cardCashUpi = new ArrayList<>();
+        UserData fetchedUser = dataService.findUser(userID);
+        cardCashUpi.add(fetchedUser.getCardTransaction());
+        cardCashUpi.add(fetchedUser.getCashTransaction());
+        cardCashUpi.add(fetchedUser.getUpiTransaction());
+        return cardCashUpi;
+    }
     @GetMapping("/totalEnpense")
     public int totalExpense(HttpServletRequest request) {
         String userID = getUserId(request);
@@ -60,4 +67,6 @@ public class chartDataController {
         String userID = getUserId(request);
         return dataService.findUser(userID).getTransactionHistory();
     }
+
+
 }

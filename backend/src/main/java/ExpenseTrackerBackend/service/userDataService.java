@@ -1,13 +1,18 @@
 package ExpenseTrackerBackend.service;
 
+import ExpenseTrackerBackend.model.IncomeSource;
 import ExpenseTrackerBackend.model.Transaction;
 import ExpenseTrackerBackend.model.User;
 import ExpenseTrackerBackend.model.UserData;
 import ExpenseTrackerBackend.repo.userDataRepo;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -20,7 +25,10 @@ public class userDataService {
     transactionService tservice;
 
     @Autowired
-    userDataRepo repo;
+    incomeService incomeService;
+
+    @Autowired
+    private Cloudinary cloudinary;
 
     public void createUserData(User user) {
         UserData userData = new UserData();
@@ -43,6 +51,15 @@ public class userDataService {
         basicUserData.put("displayName",
                 fetchedUser.getDisplayName());
         return basicUserData;
+    }
+
+    public String setProfilePic(String userID,MultipartFile file) throws IOException {
+        UserData fetchedUser = findUser(userID);
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+        String imageUrl = (String) uploadResult.get("secure_url");
+        fetchedUser.setProfilePicture(imageUrl);
+        dao.save(fetchedUser);
+        return imageUrl;
     }
 
     public String displayName(String userID, Map<String, String> body) {
@@ -103,12 +120,33 @@ public class userDataService {
                     default -> {return null;}
                 }
 
+                if (fetchedUser.getExpense().containsKey(transaction.getExpenseType())){
+                    fetchedUser.getExpense().put(transaction.getExpenseType(), fetchedUser.getExpense().get(transaction.getExpenseType()) - transaction.getAmount());
+                }
                 fetchedUser.setTotalExpense(fetchedUser.getCardTransaction() + fetchedUser.getCashTransaction() + fetchedUser.getUpiTransaction());
                 transactionHistory.remove(transaction);
-                repo.save(fetchedUser);
+                dao.save(fetchedUser);
                 break;
             }
         }
         return transactionHistory;
     }
+
+    // adds income source to the userData
+    public IncomeSource createIncomeSource(String userID, Map<String, String> body) {
+        IncomeSource incomeSource = incomeService.createIncomeSource(body);
+        UserData fetchedUser = findUser(userID);
+        fetchedUser.setTotalIncome(fetchedUser.getTotalIncome() +  incomeSource.getAmount());
+        fetchedUser.setIncomeSource(incomeSource);
+        dao.save(fetchedUser);
+        return incomeSource;
+    }
+
+//    public List<IncomeSource> deleteIncomeSource(String userID, Map<String, String> body) {
+//        //adding later
+//    }
+//
+//    public List<IncomeSource> updateIncomeSource(String userID, Map<String, String> body) {
+//        //adding later
+//    }
 }
